@@ -7,7 +7,7 @@ class UserRepository extends DbRepository
         $password = $this->hashPassword($password);
         $now = new DateTime();
 
-        $sql = "INSERT INTO (user_name, password, created_at) VALUES (:user_name, :password, :created_at)";
+        $sql = "INSERT INTO user (user_name, password, created_at) VALUES (:user_name, :password, :created_at)";
 
         $stmt = $this->execute($sql, array(
             ':user_name' => $user_name,
