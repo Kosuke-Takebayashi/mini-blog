@@ -2,6 +2,10 @@
 
 class AccountController extends Controller {
     public function signupAction() {
+        if ($this->session->isAuthenticated()) {
+            return $this->redirect('/account');
+        }
+
         return $this->render(array(
             'user_name' => '',
             'password' => '',
@@ -10,6 +14,10 @@ class AccountController extends Controller {
     }
 
     public function registerAction() {
+        if ($this->session->isAuthenticated()) {
+            return $this->redirect('/account');
+        }
+
         if(!$this->request->isPost()) {
             $this->forward404();
         }
@@ -60,5 +68,17 @@ class AccountController extends Controller {
         $user = $this->session->get('user');
 
         return $this->render(array('user' => $user));
+    }
+
+    public function signinAction() {
+        if($this->session->isAuthenticated()) {
+            return $this->redirect('/account');
+        }
+
+        return $this->render(array(
+            'user_name' => '',
+            'password' => '',
+            '_token' => $this->generateCsrfToken('account/signin'),
+        ));
     }
 }
