@@ -1,10 +1,12 @@
-<?php 
+<?php
 
-class AccountController extends Controller {
+class AccountController extends Controller
+{
 
-    protected $auth_actions = array('index', 'signout');
+    protected $auth_actions = array('index', 'signout', 'follow');
 
-    public function signupAction() {
+    public function signupAction()
+    {
         if ($this->session->isAuthenticated()) {
             return $this->redirect('/account');
         }
@@ -16,17 +18,18 @@ class AccountController extends Controller {
         ));
     }
 
-    public function registerAction() {
+    public function registerAction()
+    {
         if ($this->session->isAuthenticated()) {
             return $this->redirect('/account');
         }
 
-        if(!$this->request->isPost()) {
+        if (!$this->request->isPost()) {
             $this->forward404();
         }
 
         $token = $this->request->getPost('_token');
-        if(!$this->checkCsrfToken('account/signup',$token)) {
+        if (!$this->checkCsrfToken('account/signup', $token)) {
             return $this->redirect('/account/signup');
         }
 
@@ -35,21 +38,21 @@ class AccountController extends Controller {
 
         $errors = array();
 
-        if(!strlen($user_name)) {
+        if (!strlen($user_name)) {
             $errors[] = 'ユーザーIDを入力してください';
-        } else if (!preg_match('/^\w{3,20}$/', $user_name)){
+        } else if (!preg_match('/^\w{3,20}$/', $user_name)) {
             $errors[] = 'ユーザーIDは半角英数字およびアンダースコアを3~20文字以内で入力してください。';
-        } else if(!$this->db_manager->get('User')->isUniqueUserName($user_name)) {
+        } else if (!$this->db_manager->get('User')->isUniqueUserName($user_name)) {
             $errors[] = 'ユーザーIDは既に使用されています';
         }
 
-        if(!strlen($password)) {
+        if (!strlen($password)) {
             $errors[] = 'パスワードを入力してください';
-        } else if(4 > strlen($password) || strlen($password) > 30) {
+        } else if (4 > strlen($password) || strlen($password) > 30) {
             $errors[] = 'パスワードは4〜30文字以内で入力してください';
         }
 
-        if(count($errors) === 0) {
+        if (count($errors) === 0) {
             $this->db_manager->get('User')->insert($user_name, $password);
             $this->session->setAuthenticated(true);
 
@@ -67,14 +70,16 @@ class AccountController extends Controller {
         ), 'signup');
     }
 
-    public function indexAction() {
+    public function indexAction()
+    {
         $user = $this->session->get('user');
 
         return $this->render(array('user' => $user));
     }
 
-    public function signinAction() {
-        if($this->session->isAuthenticated()) {
+    public function signinAction()
+    {
+        if ($this->session->isAuthenticated()) {
             return $this->redirect('/account');
         }
 
@@ -85,17 +90,18 @@ class AccountController extends Controller {
         ));
     }
 
-    public function authenticateAction() {
-        if($this->session->isAuthenticated()) {
+    public function authenticateAction()
+    {
+        if ($this->session->isAuthenticated()) {
             return $this->redirect('/account');
         }
 
-        if(!$this->request->isPost()) {
+        if (!$this->request->isPost()) {
             $this->forward404();
         }
 
         $token = $this->request->getPost('_token');
-        if(!$this->checkCsrfToken('account/signin', $token)) {
+        if (!$this->checkCsrfToken('account/signin', $token)) {
             return $this->redirect('/account/signin');
         }
 
@@ -104,19 +110,19 @@ class AccountController extends Controller {
 
         $errors = array();
 
-        if(!strlen($user_name)) {
+        if (!strlen($user_name)) {
             $errors[] = 'ユーザIDを入力してください';
         }
 
-        if(!strlen($user_name)) {
+        if (!strlen($user_name)) {
             $errors[] = 'パスワードを入力してください';
         }
 
-        if(count($errors) === 0) {
+        if (count($errors) === 0) {
             $user_repository = $this->db_manager->get('User');
             $user = $user_repository->fetchByUserName($user_name);
 
-            if(!$user || ($user['password'] !== $user_repository->hashPassword($password))) {
+            if (!$user || ($user['password'] !== $user_repository->hashPassword($password))) {
                 $errors[] = 'ユーザIDかパスワードが不正です';
             } else {
                 $this->session->setAuthenticated(true);
@@ -124,7 +130,7 @@ class AccountController extends Controller {
 
                 return $this->redirect('/');
             }
-        } 
+        }
 
         return $this->render(array(
             'user_name' => $user_name,
@@ -134,10 +140,43 @@ class AccountController extends Controller {
         ), 'signin');
     }
 
-    public function signoutAction() {
+    public function signoutAction()
+    {
         $this->session->clear();
         $this->session->setAuthenticated(false);
 
         return $this->redirect('/account/signin');
+    }
+
+    public function followAction()
+    {
+        if (!$this->request->isPost()) {
+            $this->forward404();
+        }
+
+        $following_name = $this->request->getPost('following_name');
+        if (!$following_name) {
+            $this->forward404();
+        }
+
+        $token = $this->request->getPost('_token');
+        if (!$this->checkCsrfToken('account/follow', $token)) {
+            return $this->redirect('/user/' . $following_name);
+        }
+
+        $follow_user = $this->db_manager->get('User')->fetchByUserName($following_name);
+
+        if (!$follow_user) {
+            $this->forward404();
+        }
+
+        $user = $this->session->get('user');
+
+        $following_repository = $this->db_manager->get('Following');
+        if ($user['id'] !== $follow_user['id'] && !$following_repository->isFollowing($user['id'], $follow_user['id'])) {
+            $following_repository->insert($user['id'], $follow_user['id']);
+        }
+
+        return $this->redirect('/account');
     }
 }
