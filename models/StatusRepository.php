@@ -61,4 +61,13 @@ class StatusRepository extends DbRepository
             ':user_name' => $user_name,
         ));
     }
+
+    public function delete($id)
+    {
+        $sql = "DELETE FROM status WHERE id = :id";
+
+        return $this->execute($sql, array(
+            ":id" => $id,
+        ));
+    }
 }

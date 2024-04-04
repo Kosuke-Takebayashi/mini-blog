@@ -68,9 +68,9 @@ class StatusController extends Controller
 
         $following = null;
 
-        if($this->session->isAuthenticated()) {
+        if ($this->session->isAuthenticated()) {
             $my = $this->session->get('user');
-            if($my['id'] !== $user['id']) {
+            if ($my['id'] !== $user['id']) {
                 $following = $this->db_manager->get('Following')->isFollowing($my['id'], $user['id']);
             }
         }
@@ -92,5 +92,21 @@ class StatusController extends Controller
         }
 
         return $this->render(array('status' => $status));
+    }
+
+    public function deleteAction()
+    {
+        if (!$this->request->isPost()) {
+            $this->forward404();
+        }
+
+        $status_id = $this->request->getPost('status_id');
+        if (!$status_id) {
+            $this->forward404();
+        }
+
+        $this->db_manager->get('Status')->delete($status_id);
+
+        return $this->redirect('/');
     }
 }

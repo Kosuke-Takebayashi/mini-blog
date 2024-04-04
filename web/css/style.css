@@ -39,6 +39,9 @@ a {
     padding: 10px;
     border-bottom: 2px solid #CCCCCC;
     margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 ul.error_list {
@@ -50,4 +53,19 @@ ul.error_list {
 
 ul.error_list li {
     color: #FF0000;
+}
+
+.button {
+    text-decoration: none;
+    transition: opacity 0.1s;
+}
+
+.button:hover {
+    opacity: 0.6;
+}
+
+.button--delete {
+    padding: 0.5em 1em;
+    background-color: #FF0000;
+    color: #fff;
 }
